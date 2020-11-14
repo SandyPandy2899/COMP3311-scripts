@@ -1,0 +1,32 @@
+#!/bin/bash
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+NC='\033[0m'
+
+# Start sever if it is not running
+pg_isready > /dev/null 2>&1 || pg start
+
+chmod 755 tests/*.sh
+passed=0
+total=0
+for test in tests/*.sh; do
+  noext=$(echo "$test" | cut -d'.' -f1)
+  $test > $noext.out 2>&1
+  printf "$noext: "
+  if diff $noext.exp $noext.out > /dev/null; then
+    printf "${GREEN}passed${NC}\n"
+    ((passed += 1))
+  else
+    printf "${RED}failed${NC}\n"
+  fi
+  ((total += 1))
+done
+if [ $total -eq $passed ]; then
+  echo "All tests passed!"
+else
+  echo "passed $passed out of $total tests"
+  printf "${YELLOW}run 'diff TEST_NAME.exp TEST_NAME.out' to find out more${NC}\n"
+  printf "${YELLOW}run 'cat TEST_NAME.sh to view the test command'${NC}\n"
+fi

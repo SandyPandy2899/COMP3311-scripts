@@ -1,0 +1,39 @@
+#!/usr/bin/python3
+import re, os, shutil, subprocess
+from io import StringIO
+
+samples_page = "https://cgi.cse.unsw.edu.au/~cs3311/20T3/assignments/ass3/examples.php"
+prompt = "grieg$"
+
+html = subprocess.check_output(['curl', samples_page]).decode('UTF-8')
+output = StringIO(re.search(r"<pre>(.*)</pre>", html, flags=re.DOTALL).group(1))
+
+if os.path.isdir("tests"): shutil.rmtree("tests")
+os.makedirs("tests")
+
+command_count = {}
+
+command_line = ""
+command = ""
+exp_f = None
+for line in output.readlines():
+  if line.startswith('#') or line.strip() == "":
+    continue
+  # prompt will signify a command line
+  if line.startswith(prompt):
+    # close the previously open file
+    if exp_f: exp_f.close()
+    # build base file name of expected file
+    command_line = re.search(r"<b>(.*)</b>", line).group(1)
+    command = command_line.split()[0].lstrip('./')
+    command_count[command] = command_count.get(command, 0) + 1
+    fname = f"tests/{command}_{command_count[command]}"
+    # create empty exp file to which we will append the subsequent lines
+    exp_f = open(f"{fname}.exp", 'a') 
+    exp_f.truncate(0)
+    # save the command to an sh file with same base name to run tests later
+    with open(f"{fname}.sh", 'w') as f:
+      f.write(f"{command_line}\n")
+  elif exp_f:
+    exp_f.write(line)
+if exp_f: exp_f.close()
