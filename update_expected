@@ -5,9 +5,11 @@ from io import StringIO
 samples_page = "https://cgi.cse.unsw.edu.au/~cs3311/20T3/assignments/ass3/examples.php"
 prompt = "grieg$"
 
-html = subprocess.check_output(['curl', samples_page]).decode('UTF-8')
+print("fetching page...")
+html = subprocess.check_output(['curl', '-s', samples_page]).decode('UTF-8')
 output = StringIO(re.search(r"<pre>(.*)</pre>", html, flags=re.DOTALL).group(1))
 
+print("creating/emptying tests dir...")
 if os.path.isdir("tests"): shutil.rmtree("tests")
 os.makedirs("tests")
 
@@ -16,6 +18,8 @@ command_count = {}
 command_line = ""
 command = ""
 exp_f = None
+count = 0
+print("scraping tests...")
 for line in output.readlines():
   if line.startswith('#') or line.strip() == "":
     continue
@@ -34,6 +38,9 @@ for line in output.readlines():
     # save the command to an sh file with same base name to run tests later
     with open(f"{fname}.sh", 'w') as f:
       f.write(f"{command_line}\n")
+    # increment count of tests
+    count += 1
   elif exp_f:
     exp_f.write(line)
 if exp_f: exp_f.close()
+print(f"{count} tests created. Done.")
