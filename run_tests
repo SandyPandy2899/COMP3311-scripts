@@ -8,10 +8,10 @@ NC='\033[0m'
 # Start sever if it is not running
 pg_isready > /dev/null 2>&1 || pg start
 
-chmod 755 tests/*.sh
+chmod 755 sample_tests/*.sh
 passed=0
 total=0
-for test in tests/*.sh; do
+for test in sample_tests/*.sh; do
   noext=$(echo "$test" | cut -d'.' -f1)
   $test > $noext.out 2>&1
   printf "$noext: "

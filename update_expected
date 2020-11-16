@@ -9,9 +9,9 @@ print("fetching page...")
 html = subprocess.check_output(['curl', '-s', samples_page]).decode('UTF-8')
 output = StringIO(re.search(r"<pre>(.*)</pre>", html, flags=re.DOTALL).group(1))
 
-print("creating/emptying tests dir...")
-if os.path.isdir("tests"): shutil.rmtree("tests")
-os.makedirs("tests")
+print("creating/emptying sample_tests dir...")
+if os.path.isdir("sample_tests"): shutil.rmtree("sample_tests")
+os.makedirs("sample_tests")
 
 command_count = {}
 
@@ -19,7 +19,7 @@ command_line = ""
 command = ""
 exp_f = None
 count = 0
-print("scraping tests...")
+print("scraping sample tests...")
 for line in output.readlines():
   if line.startswith('#') or line.strip() == "":
     continue
@@ -31,7 +31,7 @@ for line in output.readlines():
     command_line = re.search(r"<b>(.*)</b>", line).group(1)
     command = command_line.split()[0].lstrip('./')
     command_count[command] = command_count.get(command, 0) + 1
-    fname = f"tests/{command}_{command_count[command]}"
+    fname = f"sample_tests/{command}_{command_count[command]}"
     # create empty exp file to which we will append the subsequent lines
     exp_f = open(f"{fname}.exp", 'a') 
     exp_f.truncate(0)
